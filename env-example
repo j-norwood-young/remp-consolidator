@@ -1,0 +1,6 @@
+PORT=3010
+DEBUG=true
+FLUSH_TIMEOUT=60000
+KAFKA_BROKER=localhost:9092
+KAFKA_TOPIC=beam_events
+CONSUMER_GROUP=beam_consumers
