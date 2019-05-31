@@ -1,0 +1,11 @@
+{
+  "name": "remp-consolidator",
+  "version": "0.0.1",
+  "description": "Consolidates entries from Telegraf to Elasticsearch so ES doesn't shit itself",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jason Norwood-Young <jason@10layer.com>",
+  "license": "MIT"
+}
