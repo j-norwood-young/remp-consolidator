@@ -2,7 +2,7 @@ require("dotenv").config();
 const http = require("http");
 const kafka = require('kafka-node');
 const elasticsearch = require("elasticsearch");
-const indexes = require("./indexes.json");
+const configs = require("./configs.json");
 const redis = require("redis").createClient();
 
 const redis_key = process.env.REDIS_KEY || "remp-consolidator";
@@ -89,9 +89,12 @@ const redisIsMember = (key, val) => {
 const checkCache = async () => {
     try {
         if (cache.length >= process.env.CACHE_SIZE) {
-            await esclient.bulk({ maxRetries: 5, body: cache });
+            const result = await esclient.bulk({ maxRetries: 5, body: cache });
             cache = [];
-            console.log(`Flushed cache, itteration ${ count++ }`);
+            console.log(`Flushed cache, loop ${ count++ }`);
+            if (console.env.DEBUG) {
+                console.log(result);
+            }
         }
     } catch(err) {
         console.error(err);
@@ -103,7 +106,7 @@ consumer.on('message', async (message) => {
         let [ d0, index, d1, json, d2, timestamp ] = message.value.split(/(^\S*)(\s_json=")(.*\})(\"\s)(\d.*$)/);
         timestamp = timestamp / 1000000;
         json = JSON.parse(json.replace(/\\/g,""));
-        for(config of indexes) {
+        for(config of configs) {
             try {
                 if (config.namepass === index) {
                     const key = `${redis_key}-${index}`;
@@ -123,7 +126,6 @@ consumer.on('message', async (message) => {
                 console.error(err);
             }
         };
-        // esclient.bulk()
     } catch(err) {
         console.error(err);
     }
