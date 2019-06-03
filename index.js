@@ -105,7 +105,12 @@ consumer.on('message', async (message) => {
         json = JSON.parse(json.replace(/\\/g,""));
         const config = indexes.find(config => config.namepass === index);
         if (config) {
-            ids = await redisGet(redis_key);
+            try {
+                ids = await redisGet(redis_key);
+            } catch(err) {
+                ids = [];
+                await redisSet(redis_key, ids);
+            }
             if (!ids[index]) ids[index] = [];
             if (ids[index].indexOf(json[config.id_field]) === -1) {
                 json.time = new Date(timestamp);
