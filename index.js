@@ -60,7 +60,7 @@ var cache = [];
 
 const checkCache = async () => {
     try {
-        if (cache.length >= 100) {
+        if (cache.length >= process.env.CACHE_SIZE) {
             await esclient.bulk({ maxRetries: 5, body: cache });
             cache = [];
             console.log("Flushed cache");
