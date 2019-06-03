@@ -66,7 +66,6 @@ const consumer = new kafkaConsumerGroup(kafkaOptions, process.env.KAFKA_TOPIC)
 
 var cache = [];
 var count = 0;
-var ids = {};
 
 const redisAdd = (key, val) => {
     return new Promise((resolve, reject) => {
@@ -88,7 +87,7 @@ const redisIsMember = (key, val) => {
 
 const checkCache = async () => {
     try {
-        if (cache.length >= process.env.CACHE_SIZE) {
+        if (cache.length > process.env.CACHE_SIZE) {
             const result = await esclient.bulk({ maxRetries: 5, body: cache });
             cache = [];
             console.log(`Flushed cache, loop ${ count++ }`);
@@ -121,11 +120,11 @@ consumer.on('message', async (message) => {
                         }, json);
                     }
                 }
-                await checkCache();
             } catch(err) {
                 console.error(err);
             }
         };
+        await checkCache();
     } catch(err) {
         console.error(err);
     }
