@@ -3,6 +3,13 @@ const http = require("http");
 const kafka = require('kafka-node');
 const elasticsearch = require("elasticsearch");
 const indexes = require("./indexes.json");
+const redis = require("redis").createClient();
+
+const redis_key = process.env.REDIS_KEY || "remp-consolidator";
+
+redis.on("error", err => {
+    console.error(err);
+});
 
 const port = process.env.PORT || 3100;
 
@@ -61,9 +68,28 @@ var cache = [];
 var count = 0;
 var ids = {};
 
+const redisGet = (key) => {
+    return new Promise((resolve, reject) => {
+        redis.hmget(key, (err, result) => {
+            if (err) return reject(err);
+            return resolve(result);
+        });
+    });
+}
+
+const redisSet = (key) => {
+    return new Promise((resolve, reject) => {
+        redis.hmgset(key, (err, result) => {
+            if (err) return reject(err);
+            return resolve(result);
+        });
+    });
+}
+
 const checkCache = async () => {
     try {
         if (cache.length >= process.env.CACHE_SIZE) {
+            await redisSet(redis_key, ids);
             await esclient.bulk({ maxRetries: 5, body: cache });
             cache = [];
             console.log(`Flushed cache, itteration ${ count++ }`);
@@ -79,9 +105,10 @@ consumer.on('message', async (message) => {
         json = JSON.parse(json.replace(/\\/g,""));
         const config = indexes.find(config => config.namepass === index);
         if (config) {
+            ids = await redisGet(redis_key);
             if (!ids[index]) ids[index] = [];
             if (ids[index].indexOf(json[config.id_field]) === -1) {
-                json.time = new Date();
+                json.time = new Date(timestamp);
                 ids[index].push(json[config.id_field]);
                 cache.push({
                     index: {
