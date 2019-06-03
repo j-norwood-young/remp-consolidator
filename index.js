@@ -103,21 +103,26 @@ consumer.on('message', async (message) => {
         let [ d0, index, d1, json, d2, timestamp ] = message.value.split(/(^\S*)(\s_json=")(.*\})(\"\s)(\d.*$)/);
         timestamp = timestamp / 1000000;
         json = JSON.parse(json.replace(/\\/g,""));
-        const config = indexes.find(config => config.namepass === index);
-        if (config) {
-            const key = `${redis_key}-${index}`;
-            if (!(await redisIsMember(key, json[config.id_field]))) {
-                json.time = new Date(timestamp);
-                await redisAdd(key, json[config.id_field]);
-                cache.push({
-                    index: {
-                        _index: config.index_name,
-                        _type: "_doc",
+        indexes.forEach(config => {
+            try {
+                if (config.namepass === index) {
+                    const key = `${redis_key}-${index}`;
+                    if (!(await redisIsMember(key, json[config.id_field]))) {
+                        json.time = new Date(timestamp);
+                        await redisAdd(key, json[config.id_field]);
+                        cache.push({
+                            index: {
+                                _index: config.index_name,
+                                _type: "_doc",
+                            }
+                        }, json);
                     }
-                }, json);
+                }
+                await checkCache();
+            } catch(err) {
+                console.error(err);
             }
-        }
-        await checkCache();
+        });
         // esclient.bulk()
     } catch(err) {
         console.error(err);

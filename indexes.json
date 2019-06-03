@@ -1,11 +1,17 @@
-[{
-    "index_name": "events",
-    "namepass": "events_v2",
-    "id_field": "remp_event_id"
-},
-{
-    "index_name": "pageviews",
-    "namepass": "pageviews",
-    "id_field": "remp_pageview_id"
-}
+[
+    {
+        "index_name": "events",
+        "namepass": "events_v2",
+        "id_field": "remp_event_id"
+    },
+    {
+        "index_name": "pageviews",
+        "namepass": "pageviews",
+        "id_field": "remp_pageview_id"
+    },
+    {
+        "index_name": "concurrents_by_browser",
+        "namepass": "pageviews",
+        "id_field": "browser_id"
+    }
 ]
