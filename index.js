@@ -95,8 +95,9 @@ const esBulk = (params) => {
 }
 
 const checkCache = async () => {
-    try {
-        if (cache.length > process.env.CACHE_SIZE) {
+    if (cache.length > process.env.CACHE_SIZE) {
+        try {
+            consumer.pause();
             if (process.env.DEBUG) {
                 console.log("Cache length:", cache.length);
             }
@@ -107,9 +108,11 @@ const checkCache = async () => {
                 console.log(result);
                 console.log("Items:", result.items.length);
             }
+            consumer.resume();    
+        } catch(err) {
+            consumer.resume();
+            console.error(err);
         }
-    } catch(err) {
-        console.error(err);
     }
 }
 
