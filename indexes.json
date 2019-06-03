@@ -13,5 +13,10 @@
         "index_name": "concurrents_by_browser",
         "namepass": "pageviews",
         "id_field": "browser_id"
+    },
+    {
+        "index_name": "pageviews_time_spent",
+        "namepass": "pageviews_time_spent",
+        "id_field": "remp_pageview_id"
     }
 ]
