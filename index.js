@@ -85,10 +85,19 @@ const redisIsMember = (key, val) => {
     });
 }
 
+const esBulk = (params) => {
+    return new Promise((resolve, reject) => {
+        esclient.bulk({ maxRetries: 5, body: cache }, (err, result) => {
+            if (err) return reject(err);
+            return resolve(result);
+        });
+    })
+}
+
 const checkCache = async () => {
     try {
         if (cache.length > process.env.CACHE_SIZE) {
-            const result = await esclient.bulk({ maxRetries: 5, body: cache });
+            const result = await esBulk({ maxRetries: 5, body: cache });
             cache = [];
             console.log(`Flushed cache, loop ${ count++ }`);
             if (process.env.DEBUG) {
