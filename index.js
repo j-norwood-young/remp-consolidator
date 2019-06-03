@@ -77,7 +77,7 @@ consumer.on('message', async (message) => {
     try {
         let [ d0, index, d1, json, d2, timestamp ] = message.value.split(/(^\S*)(\s_json=")(.*\})(\"\s)(\d.*$)/);
         json = JSON.parse(json.replace(/\\/g,""));
-        const config = indexes.find(config => config.namespace === index);
+        const config = indexes.find(config => config.namepass === index);
         if (config) {
             if (!ids[index]) ids[index] = [];
             if (ids[index].indexOf(json[config.id_field]) === -1) {
