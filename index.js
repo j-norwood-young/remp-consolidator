@@ -58,6 +58,7 @@ const consumer = new kafkaConsumerGroup(kafkaOptions, process.env.KAFKA_TOPIC)
 
 var cache = [];
 var count = 0;
+var ids = [];
 
 const checkCache = async () => {
     try {
@@ -78,12 +79,15 @@ consumer.on('message', async (message) => {
         if (index === "events_v2") index = "events";
         // console.log({index, json, timestamp});
         if (index === "pageviews" || index === "events") {
-            cache.push({
-                index: {
-                    _index: index,
-                    _type: "_doc",
-                }
-            }, json);
+            if (ids.indexOf(timestamp) !== -1) {
+                ids.push(timestamp);
+                cache.push({
+                    index: {
+                        _index: index,
+                        _type: "_doc",
+                    }
+                }, json);
+            }
         }
         await checkCache();
         // esclient.bulk()
