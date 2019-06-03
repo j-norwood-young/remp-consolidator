@@ -103,7 +103,7 @@ consumer.on('message', async (message) => {
         let [ d0, index, d1, json, d2, timestamp ] = message.value.split(/(^\S*)(\s_json=")(.*\})(\"\s)(\d.*$)/);
         timestamp = timestamp / 1000000;
         json = JSON.parse(json.replace(/\\/g,""));
-        indexes.forEach(async onfig => {
+        indexes.forEach(async config => {
             try {
                 if (config.namepass === index) {
                     const key = `${redis_key}-${index}`;
