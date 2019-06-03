@@ -84,7 +84,7 @@ consumer.on('message', async (message) => {
                 ids[index].push(json[config.id_field]);
                 cache.push({
                     index: {
-                        _index: config.index,
+                        _index: config.index_name,
                         _type: "_doc",
                     }
                 }, json);
