@@ -92,7 +92,7 @@ const checkCache = async () => {
             const result = await esclient.bulk({ maxRetries: 5, body: cache });
             cache = [];
             console.log(`Flushed cache, loop ${ count++ }`);
-            if (console.env.DEBUG) {
+            if (process.env.DEBUG) {
                 console.log(result);
             }
         }
