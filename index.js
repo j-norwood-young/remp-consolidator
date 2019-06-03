@@ -68,18 +68,18 @@ var cache = [];
 var count = 0;
 var ids = {};
 
-const redisGet = (key) => {
+const redisAdd = (key, val) => {
     return new Promise((resolve, reject) => {
-        redis.get(key, (err, result) => {
+        redis.SADD(key, val, (err, result) => {
             if (err) return reject(err);
             return resolve(result);
         });
     });
 }
 
-const redisSet = (key) => {
+const redisIsMember = (key, val) => {
     return new Promise((resolve, reject) => {
-        redis.set(key, (err, result) => {
+        redis.SISMEMBER(key, val, (err, result) => {
             if (err) return reject(err);
             return resolve(result);
         });
@@ -89,7 +89,6 @@ const redisSet = (key) => {
 const checkCache = async () => {
     try {
         if (cache.length >= process.env.CACHE_SIZE) {
-            await redisSet(redis_key, ids);
             await esclient.bulk({ maxRetries: 5, body: cache });
             cache = [];
             console.log(`Flushed cache, itteration ${ count++ }`);
@@ -105,17 +104,10 @@ consumer.on('message', async (message) => {
         json = JSON.parse(json.replace(/\\/g,""));
         const config = indexes.find(config => config.namepass === index);
         if (config) {
-            try {
-                ids = await redisGet(redis_key);
-                if (!ids) ids = {};
-            } catch(err) {
-                ids = {};
-                await redisSet(redis_key, ids);
-            }
-            if (!ids[index]) ids[index] = [];
-            if (ids[index].indexOf(json[config.id_field]) === -1) {
+            const key = `${redis_key}-${index}`;
+            if (!(await redisIsMember(key, json[config.id_field]))) {
                 json.time = new Date(timestamp);
-                ids[index].push(json[config.id_field]);
+                await redisAdd(key, json[config.id_field]);
                 cache.push({
                     index: {
                         _index: config.index_name,
