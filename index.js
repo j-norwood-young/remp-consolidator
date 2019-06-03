@@ -57,13 +57,14 @@ const kafkaConsumerGroup = kafka.ConsumerGroup;
 const consumer = new kafkaConsumerGroup(kafkaOptions, process.env.KAFKA_TOPIC)
 
 var cache = [];
+var count = 0;
 
 const checkCache = async () => {
     try {
         if (cache.length >= process.env.CACHE_SIZE) {
             await esclient.bulk({ maxRetries: 5, body: cache });
             cache = [];
-            console.log("Flushed cache");
+            console.log(`Flushed cache, itteration ${ count++ }`);
         }
     } catch(err) {
         console.error(err);
