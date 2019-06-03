@@ -107,6 +107,7 @@ consumer.on('message', async (message) => {
             const key = `${redis_key}-${index}`;
             if (!(await redisIsMember(key, json[config.id_field]))) {
                 json.time = new Date(timestamp);
+                json._timestamp = new Date();
                 await redisAdd(key, json[config.id_field]);
                 cache.push({
                     index: {
