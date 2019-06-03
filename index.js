@@ -81,6 +81,7 @@ consumer.on('message', async (message) => {
         if (config) {
             if (!ids[index]) ids[index] = [];
             if (ids[index].indexOf(json[config.id_field]) === -1) {
+                json.time = new Date();
                 ids[index].push(json[config.id_field]);
                 cache.push({
                     index: {
