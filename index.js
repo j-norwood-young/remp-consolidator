@@ -107,6 +107,7 @@ consumer.on('message', async (message) => {
         if (config) {
             try {
                 ids = await redisGet(redis_key);
+                if (!ids) ids = {};
             } catch(err) {
                 ids = {};
                 await redisSet(redis_key, ids);
