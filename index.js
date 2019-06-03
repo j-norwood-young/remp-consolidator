@@ -97,11 +97,15 @@ const esBulk = (params) => {
 const checkCache = async () => {
     try {
         if (cache.length > process.env.CACHE_SIZE) {
+            if (process.env.DEBUG) {
+                console.log("Cache length:", cache.length);
+            }
             const result = await esBulk({ maxRetries: 5, body: cache });
             cache = [];
             console.log(`Flushed cache, loop ${ count++ }`);
             if (process.env.DEBUG) {
                 console.log(result);
+                console.log("Items:", result.items.length);
             }
         }
     } catch(err) {
