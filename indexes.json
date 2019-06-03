@@ -15,6 +15,21 @@
         "id_field": "browser_id"
     },
     {
+        "index_name": "pageviews_progress",
+        "namepass": "pageviews_progress",
+        "id_field": "remp_pageview_id"
+    },
+    {
+        "index_name": "commerce",
+        "namepass": "commerce",
+        "id_field": "remp_commerce_id"
+    },
+    {
+        "index_name": "entities",
+        "namepass": "entities",
+        "id_field": "remp_entity_id"
+    },
+    {
         "index_name": "pageviews_time_spent",
         "namepass": "pageviews_time_spent",
         "id_field": "remp_pageview_id"
