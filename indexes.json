@@ -1,0 +1,11 @@
+[{
+    "index_name": "events",
+    "namepass": "events_v2",
+    "id_field": "remp_event_id"
+},
+{
+    "index_name": "pageviews",
+    "namepass": "pageviews",
+    "id_field": "remp_pageview_id"
+}
+]
