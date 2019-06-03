@@ -70,7 +70,7 @@ var ids = {};
 
 const redisGet = (key) => {
     return new Promise((resolve, reject) => {
-        redis.hmget(key, (err, result) => {
+        redis.get(key, (err, result) => {
             if (err) return reject(err);
             return resolve(result);
         });
@@ -79,7 +79,7 @@ const redisGet = (key) => {
 
 const redisSet = (key) => {
     return new Promise((resolve, reject) => {
-        redis.hmgset(key, (err, result) => {
+        redis.set(key, (err, result) => {
             if (err) return reject(err);
             return resolve(result);
         });
