@@ -102,7 +102,6 @@ consumer.on('message', async (message) => {
             try {
                 if (config.namepass === index) {
                     json.time = new Date(timestamp); //???
-                    await redisAdd(key, `${json[config.id_field]}-${timestamp}`);
                     cache.push({
                         index: {
                             _index: config.index_name,
