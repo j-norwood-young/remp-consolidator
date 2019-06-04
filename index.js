@@ -95,22 +95,24 @@ const esBulk = (params) => {
 }
 
 const flush = async () => {
-    try {
-        consumer.pause();
-        if (process.env.DEBUG) {
-            console.log("Cache length:", cache.length);
+    if (cache.length > process.env.CACHE_SIZE) {
+        try {
+            consumer.pause();
+            if (process.env.DEBUG) {
+                console.log("Cache length:", cache.length);
+            }
+            const result = await esBulk({ maxRetries: 5, body: cache });
+            cache = [];
+            console.log(`Flushed cache, loop ${ count++ }`);
+            if (process.env.DEBUG) {
+                console.log(result);
+                console.log("Items:", result.items.length);
+            }
+            consumer.resume();    
+        } catch(err) {
+            consumer.resume();
+            console.error(err);
         }
-        const result = await esBulk({ maxRetries: 5, body: cache });
-        cache = [];
-        console.log(`Flushed cache, loop ${ count++ }`);
-        if (process.env.DEBUG) {
-            console.log(result);
-            console.log("Items:", result.items.length);
-        }
-        consumer.resume();    
-    } catch(err) {
-        consumer.resume();
-        console.error(err);
     }
 }
 
@@ -122,10 +124,10 @@ consumer.on('message', async (message) => {
         for(config of configs) {
             try {
                 if (config.namepass === index) {
-                    const key = `${redis_key}-${config.namepass}`;
+                    const key = `${redis_key}-${index}`;
                     let exists = await redisIsMember(key, json[config.id_field]);
                     if (!exists) {
-                        json.time = new Date(timestamp);
+                        json.time = new Date(timestamp); //???
                         await redisAdd(key, json[config.id_field]);
                         cache.push({
                             index: {
@@ -139,9 +141,6 @@ consumer.on('message', async (message) => {
                 console.error(err);
             }
         };
-        if (cache.length > process.env.CACHE_SIZE) {
-            await flush();
-        }
     } catch(err) {
         console.error(err);
     }
@@ -150,3 +149,7 @@ consumer.on('message', async (message) => {
 consumer.on("error", err => {
     console.error(err);
 })
+
+const interval = process.env.TEST_INTERVAL || 5000;
+
+setInterval(flush, interval);
