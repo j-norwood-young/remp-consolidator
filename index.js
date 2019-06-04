@@ -124,7 +124,7 @@ consumer.on('message', async (message) => {
         for(config of configs) {
             try {
                 if (config.namepass === index) {
-                    const key = `${redis_key}-${index}`;
+                    const key = `${redis_key}-${index}-${timestamp}`;
                     let exists = await redisIsMember(key, json[config.id_field]);
                     if (!exists) {
                         json.time = new Date(timestamp); //???
