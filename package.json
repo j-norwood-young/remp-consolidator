@@ -1,7 +1,7 @@
 {
   "name": "remp-consolidator",
-  "version": "0.0.1",
-  "description": "Consolidates REMP entries from Kafka to Elasticsearch so ES doesn't shit itself",
+  "version": "0.0.2",
+  "description": "Consolidates REMP entries from Kafka to Elasticsearch",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

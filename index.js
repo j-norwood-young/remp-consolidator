@@ -3,21 +3,12 @@ const kafka = require('kafka-node');
 const elasticsearch = require("elasticsearch");
 const configs = require("./configs.json");
 
-server.listen(port, (err) => {
-    if (err) {
-        return console.error('something bad happened', err)
-    }
-
-    console.log(`server is listening on ${port}`)
-})
-
 const esclient = new elasticsearch.Client({
-    host: 'localhost:9200',
-    // log: 'trace'
+    host: process.env.ES_SERVER
 });
 
 const kafkaOptions = {
-	kafkaHost: '127.0.0.1:9092',
+	kafkaHost: process.env.KAFKA_SERVER,
 	groupId: process.env.KAFKA_GROUP,
 	autoCommit: true,
 	autoCommitIntervalMs: 5000,
@@ -54,8 +45,8 @@ const flush = async () => {
             }
             const result = await esBulk({ maxRetries: 5, body: cache });
             cache = [];
-            console.log(`Flushed cache, loop ${ count++ }`);
             if (process.env.DEBUG) {
+                console.log(`Flushed cache, loop ${ count++ }`);
                 console.log(result);
                 console.log("Items:", result.items.length);
             }
