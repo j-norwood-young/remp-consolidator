@@ -1,33 +1,7 @@
 require("dotenv").config();
-const http = require("http");
 const kafka = require('kafka-node');
 const elasticsearch = require("elasticsearch");
 const configs = require("./configs.json");
-
-const port = process.env.PORT || 3100;
-
-const requestHandler = (req, res) => {
-    if(req.method == 'POST') {
-        let jsonString = '';
-        req.on('data', function (data) {
-            jsonString += data;
-        });
-        req.on('end', function () {
-            try {
-                let data = JSON.parse(jsonString);
-                queueData(data);
-                // console.log(data);
-            } catch(err) {
-                
-            }
-        });
-    } else {
-        res.end('This is the remp-consolidator')    
-    }
-    // console.log(request.url)
-}
-
-const server = http.createServer(requestHandler)
 
 server.listen(port, (err) => {
     if (err) {
