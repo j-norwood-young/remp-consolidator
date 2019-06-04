@@ -94,8 +94,11 @@ const esBulk = (params) => {
     })
 }
 
+const cache_size = process.env.CACHE_SIZE || 1000;
+const cache_flush = process.env.CACHE_FLUSH || 86400;
+
 const flush = async () => {
-    if (cache.length > process.env.CACHE_SIZE) {
+    if (cache.length > cache_size) {
         try {
             consumer.pause();
             if (process.env.DEBUG) {
@@ -124,11 +127,11 @@ consumer.on('message', async (message) => {
         for(config of configs) {
             try {
                 if (config.namepass === index) {
-                    const key = `${redis_key}-${index}-${timestamp}`;
+                    const key = `${redis_key}-${index}`;
                     let exists = await redisIsMember(key, json[config.id_field]);
                     if (!exists) {
                         json.time = new Date(timestamp); //???
-                        await redisAdd(key, json[config.id_field]);
+                        await redisAdd(key, `${json[config.id_field]}-${timestamp}`);
                         cache.push({
                             index: {
                                 _index: config.index_name,
