@@ -87,32 +87,30 @@ const redisIsMember = (key, val) => {
 
 const esBulk = (params) => {
     return new Promise((resolve, reject) => {
-        esclient.bulk({ maxRetries: 5, body: cache }, (err, result) => {
+        esclient.bulk(params, (err, result) => {
             if (err) return reject(err);
             return resolve(result);
         });
     })
 }
 
-const checkCache = async () => {
-    if (cache.length > process.env.CACHE_SIZE) {
-        try {
-            consumer.pause();
-            if (process.env.DEBUG) {
-                console.log("Cache length:", cache.length);
-            }
-            const result = await esBulk({ maxRetries: 5, body: cache });
-            cache = [];
-            console.log(`Flushed cache, loop ${ count++ }`);
-            if (process.env.DEBUG) {
-                console.log(result);
-                console.log("Items:", result.items.length);
-            }
-            consumer.resume();    
-        } catch(err) {
-            consumer.resume();
-            console.error(err);
+const flush = async () => {
+    try {
+        consumer.pause();
+        if (process.env.DEBUG) {
+            console.log("Cache length:", cache.length);
         }
+        const result = await esBulk({ maxRetries: 5, body: cache });
+        cache = [];
+        console.log(`Flushed cache, loop ${ count++ }`);
+        if (process.env.DEBUG) {
+            console.log(result);
+            console.log("Items:", result.items.length);
+        }
+        consumer.resume();    
+    } catch(err) {
+        consumer.resume();
+        console.error(err);
     }
 }
 
@@ -125,7 +123,8 @@ consumer.on('message', async (message) => {
             try {
                 if (config.namepass === index) {
                     const key = `${redis_key}-${index}`;
-                    if (!(await redisIsMember(key, json[config.id_field]))) {
+                    let exists = await redisIsMember(key, json[config.id_field]);
+                    if (!exists) {
                         json.time = new Date(timestamp);
                         await redisAdd(key, json[config.id_field]);
                         cache.push({
@@ -140,7 +139,9 @@ consumer.on('message', async (message) => {
                 console.error(err);
             }
         };
-        await checkCache();
+        if (cache.length > process.env.CACHE_SIZE) {
+            await flush();
+        }
     } catch(err) {
         console.error(err);
     }
