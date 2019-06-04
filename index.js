@@ -3,13 +3,6 @@ const http = require("http");
 const kafka = require('kafka-node');
 const elasticsearch = require("elasticsearch");
 const configs = require("./configs.json");
-const redis = require("redis").createClient();
-
-const redis_key = process.env.REDIS_KEY || "remp-consolidator";
-
-redis.on("error", err => {
-    console.error(err);
-});
 
 const port = process.env.PORT || 3100;
 
@@ -67,24 +60,6 @@ const consumer = new kafkaConsumerGroup(kafkaOptions, process.env.KAFKA_TOPIC)
 var cache = [];
 var count = 0;
 
-const redisAdd = (key, val) => {
-    return new Promise((resolve, reject) => {
-        redis.SADD(key, val, (err, result) => {
-            if (err) return reject(err);
-            return resolve(result);
-        });
-    });
-}
-
-const redisIsMember = (key, val) => {
-    return new Promise((resolve, reject) => {
-        redis.SISMEMBER(key, val, (err, result) => {
-            if (err) return reject(err);
-            return resolve(result);
-        });
-    });
-}
-
 const esBulk = (params) => {
     return new Promise((resolve, reject) => {
         esclient.bulk(params, (err, result) => {
@@ -95,7 +70,6 @@ const esBulk = (params) => {
 }
 
 const cache_size = process.env.CACHE_SIZE || 1000;
-const cache_flush = process.env.CACHE_FLUSH || 86400;
 
 const flush = async () => {
     if (cache.length > cache_size) {
@@ -127,18 +101,14 @@ consumer.on('message', async (message) => {
         for(config of configs) {
             try {
                 if (config.namepass === index) {
-                    const key = `${redis_key}-${index}`;
-                    let exists = await redisIsMember(key, json[config.id_field]);
-                    if (!exists) {
-                        json.time = new Date(timestamp); //???
-                        await redisAdd(key, `${json[config.id_field]}-${timestamp}`);
-                        cache.push({
-                            index: {
-                                _index: config.index_name,
-                                _type: "_doc",
-                            }
-                        }, json);
-                    }
+                    json.time = new Date(timestamp); //???
+                    await redisAdd(key, `${json[config.id_field]}-${timestamp}`);
+                    cache.push({
+                        index: {
+                            _index: config.index_name,
+                            _type: "_doc",
+                        }
+                    }, json);
                 }
             } catch(err) {
                 console.error(err);
