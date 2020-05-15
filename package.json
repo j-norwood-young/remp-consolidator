@@ -1,7 +1,7 @@
 {
-  "name": "remp-consolidator",
+  "name": "revengine-consolidator",
   "version": "0.0.2",
-  "description": "Consolidates REMP entries from Kafka to Elasticsearch",
+  "description": "Consolidates RevEngine hits from Kafka to Elasticsearch",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
