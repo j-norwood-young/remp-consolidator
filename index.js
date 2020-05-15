@@ -46,9 +46,12 @@ const flush = async () => {
             const result = await esBulk({ maxRetries: 5, body: cache });
             cache = [];
             if (process.env.DEBUG) {
-                console.log(`Flushed cache, loop ${ count++ }`);
-                console.log(result);
-                console.log("Items:", result.items.length);
+                console.log(`Flushed cache, loop ${count++}, items ${result.items.length}`);
+                for (let item of result.items) {
+                    if (item.index.error) {
+                        console.error(item.index.error);
+                    }
+                }
             }
             consumer.resume();    
         } catch(err) {
@@ -60,19 +63,18 @@ const flush = async () => {
 
 consumer.on('message', async (message) => {
     try {
-        let [ d0, index, d1, json, d2, timestamp ] = message.value.split(/(^\S*)(\s_json=")(.*\})(\"\s)(\d.*$)/);
-        timestamp = timestamp / 1000000;
-        json = JSON.parse(json.replace(/\\/g,""));
+        json = JSON.parse(message.value);
+        // console.log({ json });
         for(config of configs) {
             try {
-                if (config.namepass === index) {
-                    json.time = new Date(timestamp); //???
+                if (config.namepass === json.index) {
                     cache.push({
                         index: {
                             _index: config.index_name,
                             _type: "_doc",
                         }
                     }, json);
+                    // console.log("Cached", json.index);
                 }
             } catch(err) {
                 console.error(err);
