@@ -1,5 +1,4 @@
-require("dotenv").config();
-const config = reqiure("config");
+const config = require("config");
 const kafka = require('kafka-node');
 const elasticsearch = require("elasticsearch");
 const configs = require("./configs.json");
