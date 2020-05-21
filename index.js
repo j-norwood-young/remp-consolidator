@@ -1,15 +1,16 @@
 require("dotenv").config();
+const config = reqiure("config");
 const kafka = require('kafka-node');
 const elasticsearch = require("elasticsearch");
 const configs = require("./configs.json");
 
 const esclient = new elasticsearch.Client({
-    host: process.env.ES_SERVER
+    host: config.es_server
 });
 
 const kafkaOptions = {
-	kafkaHost: process.env.KAFKA_SERVER,
-	groupId: process.env.KAFKA_GROUP,
+	kafkaHost: config.kafka_server,
+	groupId: config.kafka_group,
 	autoCommit: true,
 	autoCommitIntervalMs: 5000,
 	sessionTimeout: 15000,
@@ -20,7 +21,7 @@ const kafkaOptions = {
 }
 
 const kafkaConsumerGroup = kafka.ConsumerGroup;
-const consumer = new kafkaConsumerGroup(kafkaOptions, process.env.KAFKA_TOPIC)
+const consumer = new kafkaConsumerGroup(kafkaOptions, config.kafka_topic)
 
 var cache = [];
 var count = 0;
@@ -34,18 +35,18 @@ const esBulk = (params) => {
     })
 }
 
-const cache_size = process.env.CACHE_SIZE || 1000;
+const cache_size = config.cache_size || 1000;
 
 const flush = async () => {
     if (cache.length > cache_size) {
         try {
             consumer.pause();
-            if (process.env.DEBUG) {
+            if (config.debug) {
                 console.log("Cache length:", cache.length);
             }
             const result = await esBulk({ maxRetries: 5, body: cache });
             cache = [];
-            if (process.env.DEBUG) {
+            if (config.debug) {
                 console.log(`Flushed cache, loop ${count++}, items ${result.items.length}`);
                 for (let item of result.items) {
                     if (item.index.error) {
@@ -64,13 +65,15 @@ const flush = async () => {
 consumer.on('message', async (message) => {
     try {
         json = JSON.parse(message.value);
-        // console.log({ json });
-        for(config of configs) {
+        if (config.debug) {
+            console.log({ json });
+        }
+        for(let message_config of configs) {
             try {
-                if (config.namepass === json.index) {
+                if (message_config.namepass === json.index) {
                     cache.push({
                         index: {
-                            _index: config.index_name,
+                            _index: message_config.index_name,
                             _type: "_doc",
                         }
                     }, json);
@@ -89,6 +92,6 @@ consumer.on("error", err => {
     console.error(err);
 })
 
-const interval = process.env.TEST_INTERVAL || 5000;
+const interval = config.TEST_INTERVAL || 5000;
 
 setInterval(flush, interval);
