@@ -1,8 +1,7 @@
 {
-    "port": 3011,
     "debug": true,
     "flush_timeout": 10000,
-    "kafka_broker": "localhost:9092",
+    "kafka_server": "localhost:9092",
     "kafka_topic": "revengine_events",
     "consumer_group": "revengine_consumers",
     "cache_size": 1,

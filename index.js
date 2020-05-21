@@ -91,6 +91,6 @@ consumer.on("error", err => {
     console.error(err);
 })
 
-const interval = config.TEST_INTERVAL || 5000;
-
+const interval = config.test_interval || 5000;
+console.log(`Listening for kafka messages; flushing cache every ${interval / 1000}s`);
 setInterval(flush, interval);
